@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.MediaPlayer;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -24,11 +25,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Handler hdr;
     private ImageView chich;
     private Animation animation;
-    private static final int shake_threshold = 12;
+    private static final float shake_threshold = (float) 9.5;
     private Random random;
     private int ran;
     private boolean shown_dialog = false;
     private int count = 0;
+    private MediaPlayer mediaPlayer;
 
     class SensorInfo {
         float accX, accY, accZ;
@@ -51,14 +53,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         sensorInfo = new SensorInfo();
+        mediaPlayer = MediaPlayer.create(this, R.raw.sound);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
 
-        RotateAnimation anim = new RotateAnimation(0f, 15f, 50f, 50f);
+        RotateAnimation anim = new RotateAnimation(0f, 80f, 50f, 50f);
         anim.setInterpolator(new LinearInterpolator());
-        anim.setRepeatCount(1);
-        anim.setDuration(300);
+        anim.setRepeatMode(Animation.REVERSE);
+        anim.setDuration(5000);
 
         animation = AnimationUtils.loadAnimation(this, R.anim.rotate);
 
@@ -95,14 +98,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Runnable pollTask;
 
     private void startSemsi() {
+        chich.clearAnimation();
         if ((Math.abs(sensorInfo.accX) > shake_threshold) ||
                 (Math.abs(sensorInfo.accY) > shake_threshold) ||
                 (Math.abs(sensorInfo.accZ) > shake_threshold)) {
             chich.startAnimation(animation);
+            mediaPlayer.start();
             count++;
-            if (count % 3 == 0) {
+            if (count % 60 == 0) {
+                mediaPlayer = MediaPlayer.create(this, R.raw.sound);
+                mediaPlayer.stop();
                 chich.clearAnimation();
-                chich.animate().cancel();
                 randomSemsi();
             }
         }
@@ -123,7 +129,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                             shown_dialog = false;
-                            chich.setAnimation(animation);
                         }
                     });
             viewDialog.show();
