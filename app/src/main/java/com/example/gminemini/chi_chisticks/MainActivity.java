@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Handler hdr;
     private ImageView chich;
     private Animation animation;
-    private static final float shake_threshold = (float) 9.5;
+    private static final float shake_threshold = (float) 14;
     private Random random;
     private int ran;
     private boolean shown_dialog = false;
@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         RotateAnimation anim = new RotateAnimation(0f, 80f, 50f, 50f);
         anim.setInterpolator(new LinearInterpolator());
+        anim.setRepeatCount(10);
         anim.setRepeatMode(Animation.REVERSE);
         anim.setDuration(5000);
 
@@ -85,9 +86,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             sensorInfo.accX = event.values[0];
             sensorInfo.accY = event.values[1];
             sensorInfo.accZ = event.values[2];
-
         }
-
     }
 
     @Override
@@ -98,14 +97,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Runnable pollTask;
 
     private void startSemsi() {
-        chich.clearAnimation();
         if ((Math.abs(sensorInfo.accX) > shake_threshold) ||
                 (Math.abs(sensorInfo.accY) > shake_threshold) ||
                 (Math.abs(sensorInfo.accZ) > shake_threshold)) {
             chich.startAnimation(animation);
             mediaPlayer.start();
             count++;
-            if (count % 60 == 0) {
+            if (count % 10 == 0) {
                 mediaPlayer = MediaPlayer.create(this, R.raw.sound);
                 mediaPlayer.stop();
                 chich.clearAnimation();
@@ -129,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                             shown_dialog = false;
+                            chich.clearAnimation();
                         }
                     });
             viewDialog.show();
